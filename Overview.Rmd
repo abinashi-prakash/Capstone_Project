@@ -1,0 +1,106 @@
+---
+title: "Overview"
+author: "Abinashi Prakash"
+date: "19 July 2019"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Include Library
+.	ngram
+
+.	tm
+
+.	SnowballC
+
+.	Tidytext
+
+.	Rweka
+
+.	Wordcloud
+
+.	Quanteda 
+
+
+##Assignment Overview
+As a Capstone project, we have developed the Shiny App which will Predict the next possible word based on the User input. This course will start with below high level steps.
+
+1)	basic analysis of large corpus of text documents to discover the structure in the data and how words are put together.
+
+2)	It will cover cleaning and analyzing text data.
+
+3)	building and sampling from a predictive text model. 
+
+4)	build a predictive text product.
+
+## Steps
+A) Download Data in local folder.
+
+B) Capture Sample data (2000) from three datasets.
+
+C) Perform cleaning steps.
+
+D) Tokenization. 
+
+E) Word Prediction Algorithm steps.
+
+## Data Introduction
+In this assignment,we are going to use "Corpus" called the "HC Corpora" dataset which is available at  https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip .
+The corpora are collected from publicly available sources by a web crawler. The crawler checks for language, so as to mainly get texts consisting of the desired language.We have datasets available in four languages such as , English,German,Russian and Finnish.
+In our analysis we will be using dataset available in English which is having three files as,
+
+1) Blogs.
+
+2) News.
+
+3) Twitter.
+
+Due to large dataset,it is advisable to perform exploratory analysis on Sample data.In this assignment we are going to consider sample size of 2000.
+
+##A. Downloaded the data using encoding as UTF-8
+Download data from https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip to local working directory.
+
+Download Profanity/ofensive  list of Words  from https://www.freewebheaders.com/full-list-of-bad-words-banned-by-google/  .It has all the words banned by Google.
+
+##B. Capture Sample data (2000) from three datasets.
+Due to capacity limitation,we are taking the random sample of 2000 from each source files.
+
+##C. Cleaning of Data using TM package.
+###1) Use Corpus 
+We will be using TM package to perform text mining using "Corpus" .We are going to use Volatile Corpus (Vcorpus) as once the R object is destroyed, the whole corpus will be gone.Also,with Vcorpus,predefind source format "VectorSource" is being used  which only accepts (character) vectors.
+
+###2) Cleaning Data
+This involves removing special characters, punctuations, numbers,whitespace,stemDocument,Offensive words and changing the text to lower case.We re not removing Stopwords for this assignment. 
+
+
+##D. Tokenization 
+Three_gram : Group three cleaned words and save the sorted result based on number of occurences in Three_gram.Rdata file.
+Two_gram : Group two cleaned words and save the sorted result based on number of occurences in Two_gram.Rdata file.
+One_gram : Capture number of occurance of each word and Save the sorted result in One_gram.Rdata file.
+
+These files will be used in Word Prediction algorithm.
+
+##E. Word Predictor Algorithm and guide
+a) Put input word in Sidebar Panel.
+
+b) Convert the input word in lower case,remove punctuaions along with numbers if any and split in separate columns.
+
+c) If cleaned Input word/s having length greater than or equal to 2,the next predicted word would be value of most frequent 3rd column in Three_gram file if below condition is true,
+    . Last Input word should match with 2nd column of Three_gram file and Second Last word should match with 1st column        of Three_gram file.
+
+d) If condition in step:c is false then it will be searched in Two_gram file and next predict word would be the most frequent 2nd column in Two_gram file if below condition is true,
+    . Last Input word should match with 1st column of Two_gram file.
+
+e) If cleaned Input word/s having length equal to 1,the next predicted word would be value of most frequent 2nd column in Two_gram file if below condition is true,
+    . Input word should match with 1st column of Two_gram file.
+
+** In MainPanel,we are displaying 10 most frequent probbale words.
+
+** Source files Three_gram,Two_gram and One_gram files are available in github repository      
+

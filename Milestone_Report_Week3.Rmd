@@ -1,0 +1,211 @@
+---
+title: "Milestone Report"
+author: "Abinashi Prakash"
+date: "3 July 2019"
+output:
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+##Include Library
+Include all required libraries.
+```{r Library,echo=FALSE,warning=FALSE,message=FALSE}
+rm(list=ls())
+library(ggplot2)
+library(ngram)
+library(tm)
+library(SnowballC) ## to perform Stemming
+library(tidytext)
+library("RWeka")
+library(wordcloud)
+library(quanteda)
+```
+
+##Assignment Overview
+As a Capstone project, we have developed the Shiny App which will Predict the next possible word based on the User input. This course will start with below high level steps.
+1)	basic analysis of large corpus of text documents to discover the structure in the data and how words are put together. 
+2)	It will cover cleaning and analyzing text data
+3)	building and sampling from a predictive text model. 
+4)	build a predictive text product.
+
+## Steps
+
+A) Download Data in local folder
+B) Capture Sample data (2000) from three datasets.
+C) Perform cleaning steps.
+D) Tokenization 
+E) Graphical representation of 10 most frequent Trigram,Bigram and Unigram data set.
+F) Word Prediction Algorithm steps
+
+## Data Introduction
+
+In this assignment,we are going to use "Corpus" called the "HC Corpora" dataset which is available at  https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip .
+The corpora are collected from publicly available sources by a web crawler. The crawler checks for language, so as to mainly get texts consisting of the desired language.We have datasets available in four languages such as , English,German,Russian and Finnish.
+In our analysis we will be using dataset available in English which is having three files as,
+1) Blogs
+2) News
+3) Twitter
+
+Due to large dataset,it is advisable to perform exploratory analysis on Sample data.In this assignment we are going to consider sample size of 2000.
+
+##A. Downloaded the data using encoding as UTF-8
+
+Download data from https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip to local working directory
+Download Profanity/ofensive  list of Words  from https://www.freewebheaders.com/full-list-of-bad-words-banned-by-google/  .It has all the words banned by Google.
+
+```{r Data_Download,echo=FALSE,warning=FALSE}
+twitter <- readLines("en_US.twitter.txt", encoding = "UTF-8",skipNul = TRUE)
+news <- readLines("en_US.news.txt", encoding = "UTF-8",skipNul = TRUE)
+blogs <- readLines("en_US.blogs.txt", encoding = "UTF-8",skipNul = TRUE)
+##File having Ofensive words
+bad_words <- readLines("full-list-of-bad-words_text-file.txt", encoding = "UTF-8",skipNul = TRUE)
+```
+
+
+##B. Capture Sample data (2000) from three datasets.
+```{r Sample,echo=FALSE}
+clean<-gc()
+sample_twitter<- sample(twitter,2000)
+sample_news<- sample(news,2000)
+sample_blogs<- sample(blogs,2000)
+rm(twitter,blogs,news)
+Sample_Dataset <-c(wordcount(sample_twitter),wordcount(sample_news),wordcount(sample_blogs))
+dataframe_Sample_Dataset <- data.frame(Sample_Dataset)
+names(dataframe_Sample_Dataset)[1] <- "Word Count"
+row.names(dataframe_Sample_Dataset) <- c("Twitter","News","Blogs")
+dataframe_Sample_Dataset
+```
+
+##C. Cleaning of Data using TM package.
+
+###a) Use Corpus 
+We will be using TM package to perform text mining using "Corpus" .We are going to use Volatile Corpus (Vcorpus) as once the R object is destroyed, the whole corpus will be gone.Also,with Vcorpus,predefind source format "VectorSource" is being used  which only accepts (character) vectors.
+
+```{r Corpus_source,echo=FALSE,warning=FALSE}
+corpus_Sample_Data <-  VCorpus(VectorSource(c(sample_twitter, sample_news, sample_blogs)),readerControl=list(reader=readPlain,language="en"))
+rm(sample_twitter,sample_news,sample_blogs)
+```
+
+###b) Cleaning Data
+
+This involves removing special characters, punctuations, numbers,whitespace,Stopwords,stemDocument,Offensive words and changing the text to lower case. 
+
+```{r Clean,echo=FALSE,warning=FALSE}
+##
+toSpace <- content_transformer(function(x, pattern) gsub(pattern," ", x))
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,toSpace,"-")
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,toSpace,"_")
+## To Lower
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,tolower )
+##Plain Text
+corpus_Sample_Data <- tm_map(corpus_Sample_Data, PlainTextDocument)
+##Remove WhiteSpaces
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,stripWhitespace)
+## Remove Punctuation
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,removePunctuation)
+## Remove Numbers
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,removeNumbers)
+##Remove stop words
+corpus_Sample_Data <- tm_map(corpus_Sample_Data, removeWords, stopwords("english"))
+##Stemming
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,stemDocument)
+##Remove Profane Words
+bad_words <- VectorSource(bad_words)
+corpus_Sample_Data <- tm_map(corpus_Sample_Data,removeWords,bad_words)
+##inspect(corpus_Sample_Data)
+```
+
+##D. Tokenization 
+
+##NGRAM(one,Two,Three Grams)
+```{r gram ,echo=FALSE}
+clean<-gc()
+corpus_Data <-data.frame(text=unlist(sapply(corpus_Sample_Data,`[`, "content")), stringsAsFactors=F)
+ngrams <- function(x, grams) {
+  ngram_data <- NGramTokenizer(x, Weka_control(min = grams, max = grams))
+  ngram_Data_frame <- data.frame(table(ngram_data))
+  sort_matrix_Data <- ngram_Data_frame[order(ngram_Data_frame$Freq,decreasing = TRUE),]
+  colnames(sort_matrix_Data) <- c("Word","Frequency")
+  row.names(sort_matrix_Data) <-NULL
+  sort_matrix_Data
+}
+One_Grams <- ngrams(corpus_Data, 1)
+head(One_Grams,10)
+Two_Grams <- ngrams(corpus_Data, 2)
+head(Two_Grams,10)
+Three_Grams <- ngrams(corpus_Data, 3)
+head(Three_Grams,10)
+```
+
+###Trigram
+```{r Trigram_File,echo=FALSE}
+trigram_word_split <- strsplit(as.character(Three_Grams$Word),split=" ")
+trigram <- transform(Three_Grams,word1 =sapply(trigram_word_split,"[[",1),word2=sapply(trigram_word_split,"[[",2),word3=sapply(trigram_word_split,"[[",3))
+trigram <- data.frame(Str1 = trigram$word1 ,Str2 = trigram$word2, Str3 = trigram$word3, freq = Three_Grams$Frequency,stringsAsFactors=FALSE)
+write.csv(trigram[trigram$freq > 1,],"./Three_gram.csv",row.names=F)
+trigram <- read.csv("./Three_gram.csv",stringsAsFactors = F)
+saveRDS(trigram,"./Three_gram.RData")
+```
+
+###Bigram
+```{r Bigram_File,echo=FALSE}
+Bigram_word_split <- strsplit(as.character(Two_Grams$Word),split=" ")
+Bigram <- transform(Two_Grams,word1 = sapply(Bigram_word_split,"[[",1),word2 = sapply(Bigram_word_split,"[[",2))
+Bigram <- data.frame(Str1 = Bigram$word1 ,Str2 = Bigram$word2, freq = Two_Grams$Frequency ,stringsAsFactors=FALSE)
+write.csv(Bigram[Bigram$freq > 1,],"./Two_gram.csv",row.names=F)
+Bigram <- read.csv("./Two_gram.csv",stringsAsFactors = F)
+saveRDS(Bigram,"./Two_gram.RData")
+```
+
+###Unigram
+```{r Unigram_File,echo=FALSE}
+Unigram <- data.frame(Str1 = One_Grams$Word, freq = One_Grams$Frequency ,stringsAsFactors=FALSE)
+write.csv(Unigram[Unigram$freq > 1,],"./One_gram.csv",row.names=F)
+Unigram <- read.csv("./One_gram.csv",stringsAsFactors = F)
+saveRDS(Unigram,"./One_gram.RData")
+```
+
+##E. Graphical representation of Word Frequency
+###Word Cloud
+```{r Wordcloud,echo=FALSE,warning=FALSE}
+par(mfrow = c(1, 3))
+palette <- brewer.pal(15,"Dark2")
+wordcloud(One_Grams[,1],One_Grams[,2],min.freq =1,max.words=500,random.order = F,ordered.colors = F,colors=palette)
+wordcloud(Two_Grams[,1],Two_Grams[,2],min.freq =1,max.words=500,random.order = F, ordered.colors = F, colors=palette)
+wordcloud(Three_Grams[,1],Three_Grams[,2],min.freq =1,max.words=500,random.order = F, ordered.colors = F, colors=palette)
+
+```
+
+###Word Frequency(Top 10)
+```{r Plot,echo=FALSE,warning=FALSE}
+
+par(mfrow=c(1,3))
+barplot(One_Grams[1:10,2],names.arg=One_Grams[1:10,1],xlab = "Word",ylab = "Frequecy",col="red",main = "Unigram Word Frequency",las=2)
+barplot(Two_Grams[1:10,2],names.arg=Two_Grams[1:10,1],xlab = "Word",ylab = "Frequecy",col="grey",main = "Bigram Word Frequency",las=2)
+barplot(Three_Grams[1:10,2],names.arg=Three_Grams[1:10,1],xlab = "Word",ylab = "Frequecy",col="black",main = "Trigram Word Frequency",las=2)
+```
+
+
+##Word Predictor Algorithm and guide
+
+a) Put input word in Sidebar Panel.
+b) Convert the input word in lower case,remove punctuaions along with numbers if any and split in separate columns.
+c) If cleaned Input word/s having length greater than or equal to 2,the next predicted word would be value of most frequent 3rd column in Three_gram file if below condition is true,
+    . Last Input word should match with 2nd column of Three_gram file and Second Last word should match with 1st column        of Three_gram file.
+d) If condition in step:c is false then it will be searched in Two_gram file and next predict word would be the most frequent 2nd column in Two_gram file if below condition is true,
+    . Last Input word should match with 1st column of Two_gram file.
+e) If cleaned Input word/s having length equal to 1,the next predicted word would be value of most frequent 2nd column in Two_gram file if below condition is true,
+    . Input word should match with 1st column of Two_gram file.
+
+** In MainPanel,we are displaying 10 most frequent probbale words.
+** Source files Three_gram,Two_gram and One_gram files are available in github repository      
+
+
+
+
+

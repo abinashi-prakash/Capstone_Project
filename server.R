@@ -1,24 +1,22 @@
-library(tm)
-library(stringr)
-library(shiny)
+suppressWarnings(library(tm))
+suppressWarnings(library(stringr))
+suppressWarnings(library(shiny))
 
-One_gram <- "https://github.com/abinashi-prakash/Capstone_Project/blob/master/One_gram.RData";
-One_gram <- readRDS("./One_gram.RData");
-Two_gram <- "https://github.com/abinashi-prakash/Capstone_Project/blob/master/Two_gram.RData";
-Two_gram <- readRDS("./Two_gram.RData");
-Three_gram <- "https://github.com/abinashi-prakash/Capstone_Project/blob/master/Three_gram.RData";
-Three_gram <- readRDS("./Three_gram.RData");
+##Reading Input files 
+One_gram <- read.csv("https://raw.githubusercontent.com/abinashi-prakash/Capstone_Project/master/One_gram.csv",header = TRUE,stringsAsFactors = F);
+Two_gram <- read.csv("https://raw.githubusercontent.com/abinashi-prakash/Capstone_Project/master/Two_gram.csv",header = TRUE,stringsAsFactors = F);
+Three_gram <- read.csv("https://raw.githubusercontent.com/abinashi-prakash/Capstone_Project/master/Three_gram.csv",header = TRUE,stringsAsFactors = F);
 echo <<- ""
 Possible_10_Match <<- NULL
-# Cleaning of user input
 
+# Cleaning of user input
 Predict <- function(x) {
   Possible_10_Match <<- NULL
   echo <<- NULL
   clean_input_words <- removeNumbers(removePunctuation(tolower(x)))
   Input_word <- strsplit(clean_input_words, " ")[[1]]
 
-#Predict steps
+#Prediction Logic
   if(length(Input_word) >= 2)
   {
       Input_word <- tail(Input_word,2)
