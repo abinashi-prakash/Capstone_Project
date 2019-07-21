@@ -6,9 +6,10 @@ shinyUI(navbarPage("Capstone Project",
                             sidebarLayout(
                               sidebarPanel(
                                 textInput("User_Input", "Enter word/s",value = ""),
-                                ##strong("Click to get predicted words."),
-                                ##submitButton("Refresh", icon("Refresh")),
                                 helpText("Enter the word so that next word can be predicted using Three Gram or Two Gram dataset."),
+                                br(),
+                                strong("Click to get predicted words."),
+                                submitButton("Submit", icon("Refresh")),
                                 br(),
                                 strong("Note:"),
                                 helpText("We will not get any prediction if we are giving only,"),  
