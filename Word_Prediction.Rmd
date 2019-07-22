@@ -41,11 +41,11 @@ As a Capstone project, we have developed the Shiny App which will Predict the ne
 
 ##User Guide and Reference Links
 Once Shiny App for Word prediction will be launched using below link,user needs to follow the steps   
-Step1:Provide the one or multiple words including english Stop words in Sidebar panel under "Enter word/s".  
+Step1:Provide the one or multiple words in Sidebar panel under "Enter word/s".  
 Step2:Validate the Most Preferred Predicted Word and top 10 probable words in Main panel under "Probable Words" section.  
 Step3:Keep adding predicted or probable words in your Input to check next predicted and probable words.    
 Links:--   
-APP is running at :https://abinashiprakash.shinyapps.io/Word_Predictor/  
+APP is running at :https://abinashiprakash.shinyapps.io/Capstone_Project/  
 Code is available at :https://github.com/abinashi-prakash/Capstone_Project  
 Detail Overview is available at :https://github.com/abinashi-prakash/Capstone_Project/blob/master/Overview.docx
 
